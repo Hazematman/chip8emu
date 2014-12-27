@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-/* important constants */
+/* Chip8 constants */
 #define CHIP_RAM_SIZE 4096
 #define CHIP_STACK_SIZE 16
 #define CHIP_NUM_REGS 16
