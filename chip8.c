@@ -131,6 +131,7 @@ void Chip8_draw_sprite(Chip8 *chip, uint8_t x, uint8_t y, uint8_t height){
 void chip_instr0(Chip8 *chip, uint16_t opcode){
 	if(opcode == 0xE0){ // Clear the screen
 		memset(chip->gfxmemory, 0, CHIP_NUM_X_PIXELS*CHIP_NUM_Y_PIXELS);
+		chip->update_screen = true;
 	} else if(opcode == 0xEE){ // Return from subroutine
 		chip->program_counter = chip->stack[chip->stack_pointer];
 		chip->stack_pointer = MASK(chip->stack_pointer-1, 0xFF);
