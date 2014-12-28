@@ -37,5 +37,6 @@ typedef struct {
 Chip8 Chip8_create();
 void Chip8_reset(Chip8 *chip);
 void Chip8_run_cycle(Chip8 *chip);
+void Chip8_draw_sprite(Chip8 *chip, uint8_t x, uint8_t y,uint8_t height);
 
 #endif

@@ -10,11 +10,12 @@
 #define INDEX(op) MASK(op, 0x0FFF)
 #define IMMEDIATE(op) MASK(op,0x00FF)
 #define NIB(op) MASK(op, 0x000F)
+#define WRAPGFX(chip,x,y) chip->gfxmemory[x % CHIP_NUM_X_PIXELS][y % CHIP_NUM_Y_PIXELS]
 
 /* More constants for chip8 */
 #define CHIP_FONT_HEIGHT 5
 
-uint8_t chip_font_data[] = {
+const uint8_t chip_font_data[] = {
 	0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
 	0x20, 0x60, 0x20, 0x20, 0x70, // 1
 	0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
@@ -54,6 +55,24 @@ void chip_instrF(Chip8 *chip, uint16_t opcode);
 Chip8 Chip8_create(){
 	Chip8 chip;
 	Chip8_reset(&chip);
+
+	// Set all chip instructions
+	chip_instructions[0x0] = chip_instr0;
+	chip_instructions[0x1] = chip_instr1;
+	chip_instructions[0x2] = chip_instr2;
+	chip_instructions[0x3] = chip_instr3;
+	chip_instructions[0x4] = chip_instr4;
+	chip_instructions[0x5] = chip_instr5;
+	chip_instructions[0x6] = chip_instr6;
+	chip_instructions[0x7] = chip_instr7;
+	chip_instructions[0x8] = chip_instr8;
+	chip_instructions[0x9] = chip_instr9;
+	chip_instructions[0xA] = chip_instrA;
+	chip_instructions[0xB] = chip_instrB;
+	chip_instructions[0xC] = chip_instrC;
+	chip_instructions[0xD] = chip_instrD;
+	chip_instructions[0xE] = chip_instrE;
+	chip_instructions[0xF] = chip_instrF;
 	return chip;
 }
 
@@ -76,6 +95,37 @@ void Chip8_reset(Chip8 *chip){
 	chip->sound_timer = 0x00;
 
 	chip->update_screen = false;
+}
+
+void Chip8_run_cycle(Chip8 *chip){
+	// Get opcode and increment program counter
+	uint16_t opcode = chip->memory[chip->program_counter] << 8 | 
+						chip->memory[chip->program_counter+1];
+	chip->program_counter = MASK(chip->program_counter+2, 0xFFF);
+	
+	// Call the correct instruction from opcode
+	chip_instructions[MASK(opcode,0xF000)](chip, opcode);
+}
+
+void Chip8_draw_sprite(Chip8 *chip, uint8_t x, uint8_t y, uint8_t height){
+	// Set collision flag to 0
+	REGV(chip) = 0;
+
+	// Draw sprite
+	for(uint8_t ypos=0; ypos<height; ypos++){
+		uint8_t line = chip->memory[MASK(chip->address+ypos, 0xFFF)];
+		for(uint8_t xpos=0; xpos<8; xpos++){ // Check pixels 1 by 1
+			// Check if pixel at xpos is white or black
+			if((line & (0x80 >> xpos)) != 0){
+				// Check for pixel collision
+				if(WRAPGFX(chip, x+xpos, y+ypos) == 1)
+					REGV(chip) = 1;
+
+				WRAPGFX(chip, x+xpos, y+ypos) ^= 1; // Blit pixel
+			}
+		}
+	}
+	chip->update_screen = true;
 }
 
 void chip_instr0(Chip8 *chip, uint16_t opcode){
@@ -175,7 +225,7 @@ void chip_instrC(Chip8 *chip, uint16_t opcode){
 }
 void chip_instrD(Chip8 *chip, uint16_t opcode){
 	// Draw sprite
-	// TODO sprite drawing code
+	Chip8_draw_sprite(chip, REGX(chip, opcode), REGY(chip, opcode), MASK(opcode, 0xF));
 }
 void chip_instrE(Chip8 *chip, uint16_t opcode){
 	// Handle key input
