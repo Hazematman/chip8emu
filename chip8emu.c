@@ -3,6 +3,9 @@
 #define DEFAULT_SCREEN_W 640
 #define DEFAULT_SCREEN_H 480
 
+#define WHITE 0xFFFFFFFF
+#define BLACK 0xFF000000
+
 int Chip8Emu_init(Chip8Emu *emu){
 	// Init everything
 	if(SDL_Init(SDL_INIT_EVERYTHING) != 0){
@@ -33,6 +36,17 @@ int Chip8Emu_init(Chip8Emu *emu){
 
 	// Init Chip8
 	emu->chip = Chip8_create();
+	
+	// Create Screen texture
+	emu->screen = SDL_CreateTexture(
+		emu->ren, 
+		SDL_PIXELFORMAT_ARGB8888, 
+		SDL_TEXTUREACCESS_STATIC,
+		CHIP_NUM_X_PIXELS,
+		CHIP_NUM_Y_PIXELS);
+	
+	memset(emu->pixels, BLACK, sizeof(emu->pixels));
+	
 	return EXIT_SUCCESS;
 }
 
@@ -59,8 +73,12 @@ int Chip8Emu_run(Chip8Emu *emu){
 				emu->chip.sound_timer--;
 				// TODO add buzzer code
 			}
+			if(emu->chip.update_screen){
+				Chip8Emu_update_screen(emu);
+				emu->chip.update_screen = false;
+			}
 			SDL_RenderClear(emu->ren);
-			// TODO convert gfxmemory to image
+			SDL_RenderCopy(emu->ren, emu->screen, NULL, NULL);
 			SDL_RenderPresent(emu->ren);
 			
 			// Reset frame ticks
@@ -75,4 +93,16 @@ bool Chip8Emu_handle_event(Chip8Emu *emu, SDL_Event e){
 		return false;
 	}
 	return true;
+}
+
+void Chip8Emu_update_screen(Chip8Emu *emu){
+	for(int y=0; y<CHIP_NUM_Y_PIXELS; y++){
+		for(int x=0; x<CHIP_NUM_X_PIXELS; x++){
+			if(emu->chip.gfxmemory[x][y] == 0)
+				emu->pixels[y*CHIP_NUM_X_PIXELS + x] = BLACK;
+			else
+				emu->pixels[y*CHIP_NUM_X_PIXELS + x] = WHITE;
+		}
+	}
+	SDL_UpdateTexture(emu->screen, NULL, emu->pixels, sizeof(uint32_t)*CHIP_NUM_X_PIXELS);
 }
