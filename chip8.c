@@ -105,7 +105,7 @@ void Chip8_run_cycle(Chip8 *chip){
 	chip->program_counter = MASK(chip->program_counter+2, 0xFFF);
 	
 	// Call the correct instruction from opcode
-	printf("running: %04x\n", opcode);
+	//printf("running: %04x\n", opcode);
 	(*chip_instructions[MASK(opcode, 0xF000) >> 12])(chip, opcode);
 }
 

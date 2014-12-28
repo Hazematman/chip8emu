@@ -67,6 +67,8 @@ int Chip8Emu_load_rom(Chip8Emu *emu, const char *filename){
 int Chip8Emu_run(Chip8Emu *emu){
 	bool running = true;
 	uint32_t frame_ticks = SDL_GetTicks();
+	double frequency = SDL_GetPerformanceFrequency();
+	uint32_t cycle_ticks = SDL_GetPerformanceCounter();
 	SDL_Event e;
 	while(running){
 		while(SDL_PollEvent(&e)){
@@ -76,6 +78,7 @@ int Chip8Emu_run(Chip8Emu *emu){
 		}
 
 		// Run Chip8 Cycle
+		// TODO fix cycle timing for processor
 		if(emu->chip.wait_key_press == false){
 			Chip8_run_cycle(&emu->chip);
 		}

@@ -12,6 +12,9 @@ int main(int argc, char *argv[]){
 		return EXIT_FAILURE;
 	}
 	printf("Loading %s\n", argv[1]);
-	Chip8Emu_load_rom(&emu, argv[1]);
+	if(Chip8Emu_load_rom(&emu, argv[1]) == EXIT_FAILURE){
+		printf("Error loading file: %s\n", argv[1]);
+		return EXIT_FAILURE;
+	}
 	return Chip8Emu_run(&emu);
 }
