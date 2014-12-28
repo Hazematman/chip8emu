@@ -51,7 +51,14 @@ int Chip8Emu_run(Chip8Emu *emu){
 		Chip8_run_cycle(&emu->chip);
 
 		// Render screen 16 ms (60 hz)
+		// Also decrement timers at 60hz
 		if((SDL_GetTicks() - frame_ticks) > 16){
+			if(emu->chip.delay_timer > 0)
+				emu->chip.delay_timer--;
+			if(emu->chip.sound_timer > 0){
+				emu->chip.sound_timer--;
+				// TODO add buzzer code
+			}
 			SDL_RenderClear(emu->ren);
 			// TODO convert gfxmemory to image
 			SDL_RenderPresent(emu->ren);
