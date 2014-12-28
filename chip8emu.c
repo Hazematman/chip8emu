@@ -49,7 +49,6 @@ int Chip8Emu_init(Chip8Emu *emu){
 	memset(emu->pixels, BLACK, sizeof(emu->pixels));
 	SDL_UpdateTexture(emu->screen, NULL, emu->pixels, sizeof(uint32_t)*CHIP_NUM_X_PIXELS);
 	
-	
 	return EXIT_SUCCESS;
 }
 

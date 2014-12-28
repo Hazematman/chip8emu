@@ -1,10 +1,11 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "chip8.h"
 
 #define MASK(x,y) ((x) & (y))
-#define REGX(chip,op) chip->registers[MASK(op,0x0F00)]
-#define REGY(chip,op) chip->registers[MASK(op,0x00F0)]
+#define REGX(chip,op) chip->registers[MASK(op,0x0F00) >> 8]
+#define REGY(chip,op) chip->registers[MASK(op,0x00F0) >> 4]
 #define REG0(chip) chip->registers[CHIP_VZERO_REG]
 #define REGV(chip) chip->registers[CHIP_VF_REG]
 #define INDEX(op) MASK(op, 0x0FFF)
@@ -34,7 +35,6 @@ const uint8_t chip_font_data[] = {
 	0xF0, 0x80, 0xF0, 0x80, 0x80, // F
 };
 
-void (*chip_instructions[CHIP_NUM_INSTR]) (Chip8 *chip, uint16_t opcode);
 void chip_instr0(Chip8 *chip, uint16_t opcode);
 void chip_instr1(Chip8 *chip, uint16_t opcode);
 void chip_instr2(Chip8 *chip, uint16_t opcode);
@@ -51,28 +51,28 @@ void chip_instrC(Chip8 *chip, uint16_t opcode);
 void chip_instrD(Chip8 *chip, uint16_t opcode);
 void chip_instrE(Chip8 *chip, uint16_t opcode);
 void chip_instrF(Chip8 *chip, uint16_t opcode);
+void (*chip_instructions[CHIP_NUM_INSTR]) (Chip8 *chip, uint16_t opcode) = {
+	chip_instr0,
+	chip_instr1,
+	chip_instr2,
+	chip_instr3,
+	chip_instr4,
+	chip_instr5,
+	chip_instr6,
+	chip_instr7,
+	chip_instr8,
+	chip_instr9,
+	chip_instrA,
+	chip_instrB,
+	chip_instrC,
+	chip_instrD,
+	chip_instrE,
+	chip_instrF,
+};
 
 Chip8 Chip8_create(){
 	Chip8 chip;
 	Chip8_reset(&chip);
-
-	// Set all chip instructions
-	chip_instructions[0x0] = chip_instr0;
-	chip_instructions[0x1] = chip_instr1;
-	chip_instructions[0x2] = chip_instr2;
-	chip_instructions[0x3] = chip_instr3;
-	chip_instructions[0x4] = chip_instr4;
-	chip_instructions[0x5] = chip_instr5;
-	chip_instructions[0x6] = chip_instr6;
-	chip_instructions[0x7] = chip_instr7;
-	chip_instructions[0x8] = chip_instr8;
-	chip_instructions[0x9] = chip_instr9;
-	chip_instructions[0xA] = chip_instrA;
-	chip_instructions[0xB] = chip_instrB;
-	chip_instructions[0xC] = chip_instrC;
-	chip_instructions[0xD] = chip_instrD;
-	chip_instructions[0xE] = chip_instrE;
-	chip_instructions[0xF] = chip_instrF;
 	return chip;
 }
 
@@ -105,7 +105,7 @@ void Chip8_run_cycle(Chip8 *chip){
 	chip->program_counter = MASK(chip->program_counter+2, 0xFFF);
 	
 	// Call the correct instruction from opcode
-	chip_instructions[(uint8_t) MASK(opcode, 0xF000)](chip, opcode);
+	(*chip_instructions[MASK(opcode, 0xF000) >> 12])(chip, opcode);
 }
 
 void Chip8_draw_sprite(Chip8 *chip, uint8_t x, uint8_t y, uint8_t height){
