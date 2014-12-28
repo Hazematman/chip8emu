@@ -95,6 +95,7 @@ void Chip8_reset(Chip8 *chip){
 	chip->sound_timer = 0x00;
 
 	chip->update_screen = true;
+	chip->wait_key_press = false;
 }
 
 void Chip8_run_cycle(Chip8 *chip){
@@ -244,7 +245,7 @@ void chip_instrF(Chip8 *chip, uint16_t opcode){
 			REGX(chip, opcode) = chip->delay_timer;
 			break;
 		case 0x0A: // Wait for keypress
-			// TODO code to wait for keypress
+			chip->wait_key_press = true;
 			break;
 		case 0x15: // Set delay timer to VX
 			chip->delay_timer = REGX(chip, opcode);

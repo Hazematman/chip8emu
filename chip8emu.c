@@ -77,7 +77,9 @@ int Chip8Emu_run(Chip8Emu *emu){
 		}
 
 		// Run Chip8 Cycle
-		Chip8_run_cycle(&emu->chip);
+		if(emu->chip.wait_key_press == false){
+			Chip8_run_cycle(&emu->chip);
+		}
 
 		// Render screen 16 ms (60 hz)
 		// Also decrement timers at 60hz
@@ -106,6 +108,109 @@ int Chip8Emu_run(Chip8Emu *emu){
 bool Chip8Emu_handle_event(Chip8Emu *emu, SDL_Event e){
 	if(e.type == SDL_QUIT){
 		return false;
+	}else if(e.type == SDL_KEYDOWN){
+		switch(e.key.keysym.sym){
+			case SDLK_x:
+				emu->chip.key_pad[0x0] = 1;
+				break;
+			case SDLK_1:
+				emu->chip.key_pad[0x1] = 1;
+				break;
+			case SDLK_2:
+				emu->chip.key_pad[0x2] = 1;
+				break;
+			case SDLK_3:
+				emu->chip.key_pad[0x3] = 1;
+				break;
+			case SDLK_q:
+				emu->chip.key_pad[0x4] = 1;
+				break;
+			case SDLK_w:
+				emu->chip.key_pad[0x5] = 1;
+				break;
+			case SDLK_e:
+				emu->chip.key_pad[0x6] = 1;
+				break;
+			case SDLK_a:
+				emu->chip.key_pad[0x7] = 1;
+				break;
+			case SDLK_s:
+				emu->chip.key_pad[0x8] = 1;
+				break;
+			case SDLK_d:
+				emu->chip.key_pad[0x9] = 1;
+				break;
+			case SDLK_z:
+				emu->chip.key_pad[0xA] = 1;
+				break;
+			case SDLK_c:
+				emu->chip.key_pad[0xB] = 1;
+				break;
+			case SDLK_4:
+				emu->chip.key_pad[0xC] = 1;
+				break;
+			case SDLK_r:
+				emu->chip.key_pad[0xD] = 1;
+				break;
+			case SDLK_f:
+				emu->chip.key_pad[0xE] = 1;
+				break;
+			case SDLK_v:
+				emu->chip.key_pad[0xF] = 1;
+				break;
+		}
+		emu->chip.wait_key_press = false;
+	} else if(e.type == SDL_KEYUP){
+		switch(e.key.keysym.sym){
+			case SDLK_x:
+				emu->chip.key_pad[0x0] = 0;
+				break;
+			case SDLK_1:
+				emu->chip.key_pad[0x1] = 0;
+				break;
+			case SDLK_2:
+				emu->chip.key_pad[0x2] = 0;
+				break;
+			case SDLK_3:
+				emu->chip.key_pad[0x3] = 0;
+				break;
+			case SDLK_q:
+				emu->chip.key_pad[0x4] = 0;
+				break;
+			case SDLK_w:
+				emu->chip.key_pad[0x5] = 0;
+				break;
+			case SDLK_e:
+				emu->chip.key_pad[0x6] = 0;
+				break;
+			case SDLK_a:
+				emu->chip.key_pad[0x7] = 0;
+				break;
+			case SDLK_s:
+				emu->chip.key_pad[0x8] = 0;
+				break;
+			case SDLK_d:
+				emu->chip.key_pad[0x9] = 0;
+				break;
+			case SDLK_z:
+				emu->chip.key_pad[0xA] = 0;
+				break;
+			case SDLK_c:
+				emu->chip.key_pad[0xB] = 0;
+				break;
+			case SDLK_4:
+				emu->chip.key_pad[0xC] = 0;
+				break;
+			case SDLK_r:
+				emu->chip.key_pad[0xD] = 0;
+				break;
+			case SDLK_f:
+				emu->chip.key_pad[0xE] = 0;
+				break;
+			case SDLK_v:
+				emu->chip.key_pad[0xF] = 0;
+				break;
+		}
 	}
 	return true;
 }

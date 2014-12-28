@@ -32,6 +32,7 @@ typedef struct {
 	uint8_t sound_timer;
 
 	bool update_screen;
+	bool wait_key_press;
 } Chip8;
 
 Chip8 Chip8_create();
