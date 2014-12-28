@@ -209,7 +209,8 @@ void chip_instr8(Chip8 *chip, uint16_t opcode){
 			REGX(chip, opcode) = REGY(chip, opcode) - REGX(chip, opcode);
 			break;
 		case 0xE: // SHIFT VX left + set VF to last bit
-			REGV(chip) = MASK(REGX(chip, opcode), 0x80) >> 15;
+			REGV(chip) = MASK(REGX(chip, opcode), 0x80) >> 7;
+			REGX(chip, opcode) <<= 1;
 			break;
 
 	}
@@ -272,12 +273,12 @@ void chip_instrF(Chip8 *chip, uint16_t opcode){
 			chip->memory[MASK(chip->address+2, 0xFFF)] = REGX(chip, opcode) % 10;
 			break;
 		case 0x55: // Set memory of V0 to VX
-			for(uint8_t i=0; i < (MASK(opcode,0x0F00) >> 12); i++){
+			for(uint8_t i=0; i < (MASK(opcode,0x0F00) >> 8); i++){
 				chip->memory[MASK(chip->address+i, 0xFFF)] = chip->registers[i];
 			}
 			break;
 		case 0x65: // Get memory of V0 to VX
-			for(uint8_t i=0; i < (MASK(opcode,0x0F00) >> 12); i++){
+			for(uint8_t i=0; i < (MASK(opcode,0x0F00) >> 8); i++){
 				chip->registers[i] = chip->memory[MASK(chip->address+i, 0xFFF)];
 			}
 			break;
