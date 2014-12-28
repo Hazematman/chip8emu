@@ -105,6 +105,7 @@ void Chip8_run_cycle(Chip8 *chip){
 	chip->program_counter = MASK(chip->program_counter+2, 0xFFF);
 	
 	// Call the correct instruction from opcode
+	printf("running: %04x\n", opcode);
 	(*chip_instructions[MASK(opcode, 0xF000) >> 12])(chip, opcode);
 }
 
@@ -202,7 +203,7 @@ void chip_instr8(Chip8 *chip, uint16_t opcode){
 			REGX(chip, opcode) = REGY(chip, opcode) - REGX(chip, opcode);
 			break;
 		case 0xE: // SHIFT VX left + set VF to last bit
-			REGV(chip) = MASK(REGX(chip, opcode), 0x80);
+			REGV(chip) = MASK(REGX(chip, opcode), 0x80) >> 15;
 			break;
 
 	}
@@ -265,12 +266,12 @@ void chip_instrF(Chip8 *chip, uint16_t opcode){
 			chip->memory[MASK(chip->address+2, 0xFFF)] = REGX(chip, opcode) % 10;
 			break;
 		case 0x55: // Set memory of V0 to VX
-			for(uint8_t i=0; i < MASK(opcode,0x0F00); i++){
+			for(uint8_t i=0; i < (MASK(opcode,0x0F00) >> 12); i++){
 				chip->memory[MASK(chip->address+i, 0xFFF)] = chip->registers[i];
 			}
 			break;
 		case 0x65: // Get memory of V0 to VX
-			for(uint8_t i=0; i < MASK(opcode,0x0F00); i++){
+			for(uint8_t i=0; i < (MASK(opcode,0x0F00) >> 12); i++){
 				chip->registers[i] = chip->memory[MASK(chip->address+i, 0xFFF)];
 			}
 			break;
