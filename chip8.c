@@ -1,5 +1,18 @@
+#include <stdlib.h>
 #include <string.h>
 #include "chip8.h"
+
+#define MASK(x,y) (x & y)
+#define REGX(chip,op) chip->registers[MASK(op,0x0F00)]
+#define REGY(chip,op) chip->registers[MASK(op,0x00F0)]
+#define REG0(chip) chip->registers[CHIP_VZERO_REG]
+#define REGV(chip) chip->registers[CHIP_VF_REG]
+#define INDEX(op) MASK(op, 0x0FFF)
+#define IMMEDIATE(op) MASK(op,0x00FF)
+#define NIB(op) MASK(op, 0x000F)
+
+/* More constants for chip8 */
+#define CHIP_FONT_HEIGHT 5
 
 uint8_t chip_font_data[] = {
 	0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -19,6 +32,24 @@ uint8_t chip_font_data[] = {
 	0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
 	0xF0, 0x80, 0xF0, 0x80, 0x80, // F
 };
+
+void (*chip_instructions[CHIP_NUM_INSTR]) (Chip8 *chip, uint16_t opcode);
+void chip_instr0(Chip8 *chip, uint16_t opcode);
+void chip_instr1(Chip8 *chip, uint16_t opcode);
+void chip_instr2(Chip8 *chip, uint16_t opcode);
+void chip_instr3(Chip8 *chip, uint16_t opcode);
+void chip_instr4(Chip8 *chip, uint16_t opcode);
+void chip_instr5(Chip8 *chip, uint16_t opcode);
+void chip_instr6(Chip8 *chip, uint16_t opcode);
+void chip_instr7(Chip8 *chip, uint16_t opcode);
+void chip_instr8(Chip8 *chip, uint16_t opcode);
+void chip_instr9(Chip8 *chip, uint16_t opcode);
+void chip_instrA(Chip8 *chip, uint16_t opcode);
+void chip_instrB(Chip8 *chip, uint16_t opcode);
+void chip_instrC(Chip8 *chip, uint16_t opcode);
+void chip_instrD(Chip8 *chip, uint16_t opcode);
+void chip_instrE(Chip8 *chip, uint16_t opcode);
+void chip_instrF(Chip8 *chip, uint16_t opcode);
 
 Chip8 Chip8_create(){
 	Chip8 chip;
@@ -45,4 +76,151 @@ void Chip8_reset(Chip8 *chip){
 	chip->sound_timer = 0x00;
 
 	chip->update_screen = false;
+}
+
+void chip_instr0(Chip8 *chip, uint16_t opcode){
+	if(opcode == 0xE0){ // Clear the screen
+		memset(chip->gfxmemory, 0, CHIP_NUM_X_PIXELS*CHIP_NUM_Y_PIXELS);
+	} else if(opcode == 0xEE){ // Return from subroutine
+		chip->program_counter = chip->stack[chip->stack_pointer];
+		chip->stack_pointer = MASK(chip->stack_pointer-1, 0xFF);
+	}
+}
+void chip_instr1(Chip8 *chip, uint16_t opcode){
+	// Set program counter to address mask
+	chip->program_counter = MASK(opcode, 0xFFF);
+}
+void chip_instr2(Chip8 *chip, uint16_t opcode){
+	// Call subroutine
+	chip->stack_pointer = MASK(chip->stack_pointer+1,0xF);
+	chip->stack[chip->stack_pointer] = chip->program_counter;
+	chip->program_counter = MASK(opcode, 0xFFF);
+}
+void chip_instr3(Chip8 *chip, uint16_t opcode){
+	// Skip if Reg[X] == NN
+	if(REGX(chip,opcode) == IMMEDIATE(opcode)){
+		chip->program_counter += 2;
+	}
+}
+void chip_instr4(Chip8 *chip, uint16_t opcode){
+	// Skip if VX != NN
+	if(REGX(chip,opcode) != IMMEDIATE(opcode)){
+		chip->program_counter += 2;
+	}
+}
+void chip_instr5(Chip8 *chip, uint16_t opcode){
+	// Skip if VX == VY
+	if(REGX(chip, opcode) == REGY(chip, opcode)){
+		chip->program_counter += 2;
+	}
+}
+void chip_instr6(Chip8 *chip, uint16_t opcode){
+	// Set VX to immediate value
+	REGX(chip, opcode) = IMMEDIATE(opcode);
+}
+void chip_instr7(Chip8 *chip, uint16_t opcode){
+	// Add immediate to VX
+	REGX(chip, opcode) += IMMEDIATE(opcode);
+}
+void chip_instr8(Chip8 *chip, uint16_t opcode){
+	switch(NIB(opcode)){
+		case 0x1: // OR VX and VY
+			REGX(chip, opcode) |= REGY(chip, opcode);
+			break;
+		case 0x2: // AND VX and VY
+			REGX(chip, opcode) &= REGY(chip, opcode);
+			break;
+		case 0x3: // XOR VX and VY
+			REGX(chip, opcode) ^= REGY(chip, opcode);
+			break;
+		case 0x4: // ADD VX and VY + set carry
+			REGV(chip) = (REGX(chip, opcode) - REGY(chip, opcode)) < REGX(chip, opcode);
+			REGX(chip, opcode) += REGY(chip, opcode);
+			break;
+		case 0x5: // SUB VX and VY + set carry
+			REGV(chip) = (REGX(chip, opcode) - REGY(chip, opcode)) > REGX(chip, opcode);
+			REGX(chip, opcode) -= REGY(chip, opcode);
+			break;
+		case 0x6: // SHIFT VX right + set VF to first bit
+			REGV(chip) = MASK(REGX(chip, opcode), 0x1);
+			REGX(chip, opcode) >>= 1;
+			break;
+		case 0x7: // SUB VY and VX
+			REGV(chip) = (REGY(chip, opcode) - REGX(chip, opcode)) < REGY(chip, opcode);
+			REGX(chip, opcode) = REGY(chip, opcode) - REGX(chip, opcode);
+			break;
+		case 0xE: // SHIFT VX left + set VF to last bit
+			REGV(chip) = MASK(REGX(chip, opcode), 0x80);
+			break;
+
+	}
+}
+void chip_instr9(Chip8 *chip, uint16_t opcode){
+	// Skip if VX != VY
+	if(REGX(chip, opcode) != REGY(chip, opcode)){
+		chip->program_counter += 2;
+	}
+}
+void chip_instrA(Chip8 *chip, uint16_t opcode){
+	// Set address to index
+	chip->address = INDEX(opcode);
+}
+void chip_instrB(Chip8 *chip, uint16_t opcode){
+	// Jump to index + VO
+	chip->program_counter = MASK(INDEX(opcode) + REG0(chip), 0xFFF);
+}
+void chip_instrC(Chip8 *chip, uint16_t opcode){
+	// Random number with bit mask
+	REGX(chip, opcode) = MASK(rand(), IMMEDIATE(opcode));	
+}
+void chip_instrD(Chip8 *chip, uint16_t opcode){
+	// Draw sprite
+	// TODO sprite drawing code
+}
+void chip_instrE(Chip8 *chip, uint16_t opcode){
+	// Handle key input
+	// First skips if key is down
+	// Second skips if key is not down
+	if((INDEX(opcode) == 0x9E && (chip->key_pad[REGX(chip, opcode)] == true)) ||
+		(INDEX(opcode) == 0xA1 && (chip->key_pad[REGX(chip, opcode)] == false))){
+
+		chip->program_counter += 2;
+	}
+}
+void chip_instrF(Chip8 *chip, uint16_t opcode){
+	switch(IMMEDIATE(opcode)){
+		case 0x07: // Set VX to delay_timer
+			REGX(chip, opcode) = chip->delay_timer;
+			break;
+		case 0x0A: // Wait for keypress
+			// TODO code to wait for keypress
+			break;
+		case 0x15: // Set delay timer to VX
+			chip->delay_timer = REGX(chip, opcode);
+			break;
+		case 0x18: // Set sound timer to VX
+			chip->sound_timer = REGX(chip, opcode);
+			break;
+		case 0x1E: // ADD VX to address
+			chip->address = MASK(chip->address + REGX(chip, opcode), 0xFFF);
+			break;
+		case 0x29: // Set address to the spirte address of VX
+			chip->address = REGX(chip, opcode) * 5;
+			break;
+		case 0x33: // Convert VX to BCD and store at I,I+1,I+2
+			chip->memory[MASK(chip->address, 0xFFF)] = (REGX(chip, opcode) / 100) % 10;
+			chip->memory[MASK(chip->address+1, 0xFFF)] = (REGX(chip, opcode) / 10) % 10;
+			chip->memory[MASK(chip->address+2, 0xFFF)] = REGX(chip, opcode) % 10;
+			break;
+		case 0x55: // Set memory of V0 to VX
+			for(int i=0; i < MASK(opcode,0x0F00); i++){
+				chip->memory[MASK(chip->address+i, 0xFFF)] = chip->registers[i];
+			}
+			break;
+		case 0x65: // Get memory of V0 to VX
+			for(int i=0; i < MASK(opcode,0x0F00); i++){
+				chip->registers[i] = chip->memory[MASK(chip->address+i, 0xFFF)];
+			}
+			break;
+	}
 }

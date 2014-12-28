@@ -10,6 +10,7 @@
 #define CHIP_NUM_KEYS 16
 #define CHIP_NUM_X_PIXELS 64
 #define CHIP_NUM_Y_PIXELS 32
+#define CHIP_NUM_INSTR 16
 #define CHIP_VZERO_REG 0
 #define CHIP_VF_REG 15
 
@@ -23,7 +24,7 @@ typedef struct {
 	uint16_t stack[CHIP_STACK_SIZE];
 	uint8_t gfxmemory[CHIP_NUM_X_PIXELS][CHIP_NUM_Y_PIXELS];
 	uint8_t key_pad[CHIP_NUM_KEYS];
-	
+
 	uint16_t program_counter;
 	uint8_t stack_pointer;
 	uint16_t address;
@@ -35,5 +36,6 @@ typedef struct {
 
 Chip8 Chip8_create();
 void Chip8_reset(Chip8 *chip);
+void Chip8_run_cycle(Chip8 *chip);
 
 #endif
