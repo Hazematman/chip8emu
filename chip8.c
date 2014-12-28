@@ -3,6 +3,7 @@
 #include <string.h>
 #include "chip8.h"
 
+/* Macros to help with instruction functions */
 #define MASK(x,y) ((x) & (y))
 #define REGX(chip,op) chip->registers[MASK(op,0x0F00) >> 8]
 #define REGY(chip,op) chip->registers[MASK(op,0x00F0) >> 4]
