@@ -94,7 +94,7 @@ void Chip8_reset(Chip8 *chip){
 	chip->delay_timer = 0x00;
 	chip->sound_timer = 0x00;
 
-	chip->update_screen = false;
+	chip->update_screen = true;
 }
 
 void Chip8_run_cycle(Chip8 *chip){

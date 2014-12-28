@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "chip8emu.h"
 
 #define DEFAULT_SCREEN_W 640
@@ -46,7 +47,21 @@ int Chip8Emu_init(Chip8Emu *emu){
 		CHIP_NUM_Y_PIXELS);
 	
 	memset(emu->pixels, BLACK, sizeof(emu->pixels));
+	SDL_UpdateTexture(emu->screen, NULL, emu->pixels, sizeof(uint32_t)*CHIP_NUM_X_PIXELS);
 	
+	
+	return EXIT_SUCCESS;
+}
+
+int Chip8Emu_load_rom(Chip8Emu *emu, const char *filename){
+	FILE *fp = NULL;
+	fp = fopen(filename, "rb");
+	if(fp != NULL){
+		fread(emu->chip.memory + CHIP_START_ADDRESS, 
+			CHIP_RAM_SIZE - CHIP_START_ADDRESS, 1, fp);
+	} else {
+		return EXIT_FAILURE;
+	}
 	return EXIT_SUCCESS;
 }
 

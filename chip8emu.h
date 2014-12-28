@@ -13,6 +13,7 @@ typedef struct {
 } Chip8Emu;
 
 int Chip8Emu_init(Chip8Emu *emu);
+int Chip8Emu_load_rom(Chip8Emu *emu, const char *filename);
 int Chip8Emu_run(Chip8Emu *emu);
 bool Chip8Emu_handle_event(Chip8Emu *emu, SDL_Event e);
 void Chip8Emu_update_screen(Chip8Emu *emu);
