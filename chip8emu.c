@@ -62,6 +62,9 @@ int Chip8Emu_run(Chip8Emu *emu){
 			SDL_RenderClear(emu->ren);
 			// TODO convert gfxmemory to image
 			SDL_RenderPresent(emu->ren);
+			
+			// Reset frame ticks
+			frame_ticks = SDL_GetTicks();
 		}
 	}
 	return EXIT_SUCCESS;
