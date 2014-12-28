@@ -120,7 +120,7 @@ void Chip8_draw_sprite(Chip8 *chip, uint8_t x, uint8_t y, uint8_t height){
 		uint8_t line = chip->memory[MASK(chip->address+ypos, 0xFFF)];
 		for(uint8_t xpos=0; xpos<8; xpos++){ // Check pixels 1 by 1
 			// Check if pixel at xpos is white or black
-			if((line & (0x80 >> xpos)) != 0){
+			if((line & (0x80 >> xpos)) > 0){
 				// Check for pixel collision
 				if(WRAPGFX(chip, x+xpos, y+ypos) == 1){
 					REGV(chip) = 1;
@@ -209,7 +209,7 @@ void chip_instr8(Chip8 *chip, uint16_t opcode){
 			REGX(chip, opcode) = REGY(chip, opcode) - REGX(chip, opcode);
 			break;
 		case 0xE: // SHIFT VX left + set VF to last bit
-			REGV(chip) = MASK(REGX(chip, opcode), 0x80) >> 7;
+			REGV(chip) = REGX(chip, opcode) >> 7;
 			REGX(chip, opcode) <<= 1;
 			break;
 
@@ -231,7 +231,7 @@ void chip_instrB(Chip8 *chip, uint16_t opcode){
 }
 void chip_instrC(Chip8 *chip, uint16_t opcode){
 	// Random number with bit mask
-	REGX(chip, opcode) = MASK(rand(), IMMEDIATE(opcode));	
+	REGX(chip, opcode) = MASK(rand()%0xFF, IMMEDIATE(opcode));	
 }
 void chip_instrD(Chip8 *chip, uint16_t opcode){
 	// Draw sprite
