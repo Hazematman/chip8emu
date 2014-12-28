@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "chip8.h"
@@ -105,8 +104,6 @@ void Chip8_run_cycle(Chip8 *chip){
 	chip->program_counter = MASK(chip->program_counter+2, 0xFFF);
 	
 	// Call the correct instruction from opcode
-	uint8_t instr = MASK(opcode, 0xF000);
-	printf("%u\n", instr);
 	chip_instructions[(uint8_t) MASK(opcode, 0xF000)](chip, opcode);
 }
 
