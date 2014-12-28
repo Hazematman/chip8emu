@@ -196,16 +196,16 @@ void chip_instr8(Chip8 *chip, uint16_t opcode){
 			REGV(chip) = (REGX(chip, opcode) - REGY(chip, opcode)) < REGX(chip, opcode);
 			REGX(chip, opcode) += REGY(chip, opcode);
 			break;
-		case 0x5: // SUB VX and VY + set carry
-			REGV(chip) = (REGX(chip, opcode) - REGY(chip, opcode)) > REGX(chip, opcode);
+		case 0x5: // SUB VX and VY + set borrow
+			REGV(chip) = REGX(chip, opcode) > REGY(chip, opcode);
 			REGX(chip, opcode) -= REGY(chip, opcode);
 			break;
 		case 0x6: // SHIFT VX right + set VF to first bit
 			REGV(chip) = MASK(REGX(chip, opcode), 0x1);
 			REGX(chip, opcode) >>= 1;
 			break;
-		case 0x7: // SUB VY and VX
-			REGV(chip) = (REGY(chip, opcode) - REGX(chip, opcode)) < REGY(chip, opcode);
+		case 0x7: // SUB VY and VX + set borrow
+			REGV(chip) = REGY(chip, opcode) > REGX(chip, opcode);
 			REGX(chip, opcode) = REGY(chip, opcode) - REGX(chip, opcode);
 			break;
 		case 0xE: // SHIFT VX left + set VF to last bit
