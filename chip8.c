@@ -105,8 +105,10 @@ void Chip8_run_cycle(Chip8 *chip){
 	chip->program_counter = MASK(chip->program_counter+2, 0xFFF);
 	
 	// Call the correct instruction from opcode
-	//printf("running: %04x\n", opcode);
 	(*chip_instructions[MASK(opcode, 0xF000) >> 12])(chip, opcode);
+	
+	// Make sure program counter is in range 0-4095
+	chip->program_counter = MASK(chip->program_counter, 0xFFF);
 }
 
 void Chip8_draw_sprite(Chip8 *chip, uint8_t x, uint8_t y, uint8_t height){
@@ -178,6 +180,9 @@ void chip_instr7(Chip8 *chip, uint16_t opcode){
 }
 void chip_instr8(Chip8 *chip, uint16_t opcode){
 	switch(NIB(opcode)){
+		case 0x0: // SET VX to VY
+			REGX(chip, opcode) = REGY(chip, opcode);
+			break;
 		case 0x1: // OR VX and VY
 			REGX(chip, opcode) |= REGY(chip, opcode);
 			break;
