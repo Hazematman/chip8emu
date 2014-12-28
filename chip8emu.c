@@ -4,6 +4,8 @@
 #define DEFAULT_SCREEN_W 640
 #define DEFAULT_SCREEN_H 480
 
+#define CHIP_CYCLE_TIME 0.0009 // Determined by lots of testing
+
 #define WHITE 0xFFFFFFFF
 #define BLACK 0xFF000000
 
@@ -68,7 +70,7 @@ int Chip8Emu_run(Chip8Emu *emu){
 	bool running = true;
 	uint32_t frame_ticks = SDL_GetTicks();
 	double frequency = SDL_GetPerformanceFrequency();
-	uint32_t cycle_ticks = SDL_GetPerformanceCounter();
+	uint64_t cycle_ticks = SDL_GetPerformanceCounter();
 	SDL_Event e;
 	while(running){
 		while(SDL_PollEvent(&e)){
@@ -78,9 +80,11 @@ int Chip8Emu_run(Chip8Emu *emu){
 		}
 
 		// Run Chip8 Cycle
-		// TODO fix cycle timing for processor
-		if(emu->chip.wait_key_press == false){
+		if(emu->chip.wait_key_press == false &&
+			(double(SDL_GetPerformanceCounter() - cycle_ticks)/frequency) > CHIP_CYCLE_TIME){
+				
 			Chip8_run_cycle(&emu->chip);
+			cycle_ticks = SDL_GetPerformanceCounter();
 		}
 
 		// Render screen 16 ms (60 hz)

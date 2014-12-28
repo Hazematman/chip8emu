@@ -120,8 +120,9 @@ void Chip8_draw_sprite(Chip8 *chip, uint8_t x, uint8_t y, uint8_t height){
 			// Check if pixel at xpos is white or black
 			if((line & (0x80 >> xpos)) != 0){
 				// Check for pixel collision
-				if(WRAPGFX(chip, x+xpos, y+ypos) == 1)
+				if(WRAPGFX(chip, x+xpos, y+ypos) == 1){
 					REGV(chip) = 1;
+				}
 
 				WRAPGFX(chip, x+xpos, y+ypos) ^= 1; // Blit pixel
 			}
