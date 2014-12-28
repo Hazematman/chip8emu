@@ -8,7 +8,7 @@ SRC_EXT = c
 # Path to the source directory, relative to the makefile
 SRC_PATH = .
 # Space-separated pkg-config libraries used by this project
-LIBS =
+LIBS = sdl2
 # General compiler flags
 COMPILE_FLAGS = -std=c11 -Wall -g
 # Additional release-specific flags
