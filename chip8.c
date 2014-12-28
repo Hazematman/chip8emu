@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "chip8.h"
@@ -106,7 +107,7 @@ void Chip8_run_cycle(Chip8 *chip){
 	// Call the correct instruction from opcode
 	uint8_t instr = MASK(opcode, 0xF000);
 	printf("%u\n", instr);
-	chip_instructions[MASK(opcode,0xF000)](chip, opcode);
+	chip_instructions[(uint8_t) MASK(opcode, 0xF000)](chip, opcode);
 }
 
 void Chip8_draw_sprite(Chip8 *chip, uint8_t x, uint8_t y, uint8_t height){
