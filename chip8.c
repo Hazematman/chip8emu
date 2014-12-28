@@ -2,7 +2,7 @@
 #include <string.h>
 #include "chip8.h"
 
-#define MASK(x,y) (x & y)
+#define MASK(x,y) ((x) & (y))
 #define REGX(chip,op) chip->registers[MASK(op,0x0F00)]
 #define REGY(chip,op) chip->registers[MASK(op,0x00F0)]
 #define REG0(chip) chip->registers[CHIP_VZERO_REG]
@@ -104,6 +104,8 @@ void Chip8_run_cycle(Chip8 *chip){
 	chip->program_counter = MASK(chip->program_counter+2, 0xFFF);
 	
 	// Call the correct instruction from opcode
+	uint8_t instr = MASK(opcode, 0xF000);
+	printf("%u\n", instr);
 	chip_instructions[MASK(opcode,0xF000)](chip, opcode);
 }
 
