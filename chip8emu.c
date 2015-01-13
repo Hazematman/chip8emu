@@ -30,7 +30,7 @@ int Chip8Emu_init(Chip8Emu *emu){
 		return EXIT_FAILURE;
 	}
 
-	emu->ren = SDL_CreateRenderer(emu->win, 1, SDL_RENDERER_ACCELERATED);
+	emu->ren = SDL_CreateRenderer(emu->win, -1, SDL_RENDERER_ACCELERATED);
 	if(emu->ren == NULL){
 		printf("SDL_CreateRenderer Error: %s\n", SDL_GetError());
 		SDL_Quit();
